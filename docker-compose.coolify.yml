@@ -1,0 +1,69 @@
+# Production stack for Coolify on Hostinger.
+#
+# In Coolify:
+#   1. Create a new "Docker Compose" resource and paste this file's contents (or point to the repo).
+#   2. Set the following environment variables in Coolify's UI (do NOT commit secrets):
+#        POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
+#        SECRET_KEY, OPENAI_API_KEY
+#        DOMAIN (e.g. learn.example.com), VITE_API_URL (e.g. https://api.learn.example.com)
+#   3. In Coolify's domain settings, route ${DOMAIN} → frontend:80 and api.${DOMAIN} → backend:8000.
+#      Coolify's Traefik takes care of HTTPS via Let's Encrypt — do not expose ports here.
+
+name: learning-platform
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      SECRET_KEY: ${SECRET_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o}
+      DEMO_USERNAME: ${DEMO_USERNAME:-demo}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-learnnow}
+      BACKEND_CORS_ORIGINS: "https://${DOMAIN}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      # Coolify reads these to route the public domain to this service
+      - coolify.managed=true
+      - coolify.port=8000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    labels:
+      - coolify.managed=true
+      - coolify.port=80
+
+volumes:
+  postgres_data:

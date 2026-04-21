@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif;
+    color: theme('colors.owl.ink');
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-2xl px-5 py-3 font-bold uppercase tracking-wide transition active:translate-y-1 active:shadow-button-active;
+  }
+  .btn-primary {
+    @apply btn bg-owl-green text-white shadow-button hover:bg-owl-green-dark;
+  }
+  .btn-secondary {
+    @apply btn bg-white text-owl-ink border-2 border-owl-mist shadow-button hover:bg-slate-50;
+  }
+  .btn-danger {
+    @apply btn bg-owl-red text-white shadow-button;
+  }
+  .card {
+    @apply rounded-2xl border-2 border-owl-mist bg-white p-5;
+  }
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-sm font-bold border-2 border-owl-mist;
+  }
+}
