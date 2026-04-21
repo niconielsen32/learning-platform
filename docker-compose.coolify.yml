@@ -48,10 +48,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    labels:
-      # Coolify reads these to route the public domain to this service
-      - coolify.managed=true
-      - coolify.port=8000
+    expose:
+      - "8000"
 
   frontend:
     build:
@@ -62,9 +60,8 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
-    labels:
-      - coolify.managed=true
-      - coolify.port=80
+    expose:
+      - "80"
 
 volumes:
   postgres_data:
