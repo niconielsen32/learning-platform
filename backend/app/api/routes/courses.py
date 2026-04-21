@@ -17,11 +17,14 @@ router = APIRouter(prefix="/courses", tags=["courses"])
 
 
 async def _generate_in_background(course_id: UUID) -> None:
+    import structlog
+
+    log = structlog.get_logger()
     async with AsyncSessionLocal() as session:
         try:
             await generate_course_outline(session, course_id=course_id)
         except Exception:
-            pass  # already marked FAILED inside the generator
+            log.exception("course_generation_failed", course_id=str(course_id))
 
 
 @router.post("", response_model=CourseRead, status_code=status.HTTP_201_CREATED)

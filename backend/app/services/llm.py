@@ -43,7 +43,7 @@ async def generate_structured(
     """
     response = await _client.chat.completions.create(
         model=settings.openai_model,
-        max_tokens=max_tokens or settings.openai_max_tokens,
+        max_completion_tokens=max_tokens or settings.openai_max_tokens,
         response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": system},
