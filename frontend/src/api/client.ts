@@ -2,8 +2,13 @@ import axios from "axios";
 
 import { useAuthStore } from "@/stores/auth";
 
+// In production the SPA is served by the same FastAPI container that serves
+// the API, so VITE_API_URL can be empty and calls stay same-origin on /api.
+// In dev we point at the standalone backend (http://localhost:8000).
+const base = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:8000",
+  baseURL: `${base}/api`,
   withCredentials: false,
 });
 

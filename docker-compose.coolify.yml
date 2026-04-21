@@ -1,13 +1,11 @@
-# Production stack for Coolify on Hostinger.
+# Single-service production stack for Coolify. FastAPI serves both /api/*
+# and the React SPA from the same container, so there's only one Traefik
+# router to configure (apex → app, port 8000).
 #
-# In Coolify:
-#   1. Create a new "Docker Compose" resource and paste this file's contents (or point to the repo).
-#   2. Set the following environment variables in Coolify's UI (do NOT commit secrets):
-#        POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
-#        SECRET_KEY, OPENAI_API_KEY
-#        DOMAIN (e.g. learn.example.com), VITE_API_URL (e.g. https://api.learn.example.com)
-#   3. In Coolify's domain settings, route ${DOMAIN} → frontend:80 and api.${DOMAIN} → backend:8000.
-#      Coolify's Traefik takes care of HTTPS via Let's Encrypt — do not expose ports here.
+# Coolify env vars required:
+#   POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
+#   SECRET_KEY, OPENAI_API_KEY
+#   DOMAIN (e.g. agent2agent.company)
 
 name: learning-platform
 
@@ -28,10 +26,13 @@ services:
       retries: 10
       start_period: 30s
 
-  backend:
+  app:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
+      args:
+        # Empty string → SPA makes same-origin /api/* calls to this container.
+        VITE_API_URL: ""
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -50,20 +51,6 @@ services:
         condition: service_healthy
     expose:
       - "8000"
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        VITE_API_URL: ${VITE_API_URL}
-    restart: unless-stopped
-    depends_on:
-      - backend
-    expose:
-      - "8080"
-    ports:
-      - "9090:8080"
 
 volumes:
   postgres_data:
