@@ -8,7 +8,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
       POSTGRES_DB: ${POSTGRES_DB:-learning_platform}
     ports:
-      - "5432:5432"
+      # Host port is 5433 to avoid colliding with a local Postgres on 5432.
+      # Inside the docker network, backend still reaches it as `postgres:5432`.
+      - "127.0.0.1:5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

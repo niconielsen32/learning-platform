@@ -52,7 +52,7 @@ docker compose up --build
 
 - Frontend: http://localhost:5173
 - API docs: http://localhost:8000/docs
-- Postgres: `localhost:5432` (user/pass from `.env`)
+- Postgres: `localhost:5433` (user/pass from `.env`) — host-side port is `5433` to avoid colliding with a local Postgres; the backend container still talks to it as `postgres:5432` over the docker network.
 
 The backend container runs `alembic upgrade head` on every start, so the schema is always current.
 
