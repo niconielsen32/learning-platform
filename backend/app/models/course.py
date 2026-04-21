@@ -110,6 +110,7 @@ class Exercise(Base):
     lesson_id: Mapped[UUID] = mapped_column(
         ForeignKey("lesson.id", ondelete="CASCADE"), index=True
     )
+    lesson: Mapped["Lesson"] = relationship(back_populates="exercises")
     position: Mapped[int] = mapped_column(Integer)
     kind: Mapped[ExerciseKind] = mapped_column(String(32))
     prompt: Mapped[str] = mapped_column(Text)

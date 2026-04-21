@@ -18,8 +18,10 @@ COPY . .
 
 EXPOSE 8000
 
-# Apply migrations on every start so Coolify deploys are zero-touch.
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips '*'"]
+# Tables are created/updated by the lifespan handler in app/main.py via
+# Base.metadata.create_all (idempotent). Once you start using Alembic
+# revisions, prepend `alembic upgrade head &&` to this command.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD curl -fsS http://localhost:8000/health || exit 1

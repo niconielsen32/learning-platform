@@ -54,17 +54,7 @@ docker compose up --build
 - API docs: http://localhost:8000/docs
 - Postgres: `localhost:5433` (user/pass from `.env`) — host-side port is `5433` to avoid colliding with a local Postgres; the backend container still talks to it as `postgres:5432` over the docker network.
 
-The backend container runs `alembic upgrade head` on every start, so the schema is always current.
-
-### First-time migration
-The repo ships without a baseline migration. Generate one once after first `docker compose up`:
-
-```bash
-docker compose exec backend alembic revision --autogenerate -m "initial schema"
-docker compose exec backend alembic upgrade head
-```
-
-Commit the generated file under `backend/alembic/versions/`.
+On startup the backend runs `Base.metadata.create_all` to create any missing tables (idempotent), so a fresh database "just works". When you need to evolve the schema in production, switch to Alembic revisions — the `backend/alembic/` config is already in place; just generate a baseline with `alembic revision --autogenerate -m "initial"` and prepend `alembic upgrade head &&` to the Dockerfile `CMD`.
 
 ### Running without Docker
 ```bash
@@ -72,7 +62,6 @@ Commit the generated file under `backend/alembic/versions/`.
 cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-alembic upgrade head
 uvicorn app.main:app --reload
 
 # Frontend (in another terminal)

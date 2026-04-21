@@ -4,9 +4,10 @@ import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app import models  # noqa: F401 — register all SQLAlchemy models on Base.metadata
 from app.api.routes import auth, courses, gamification, lessons, users
 from app.config import get_settings
-from app.database import AsyncSessionLocal
+from app.database import AsyncSessionLocal, Base, engine
 from app.services.seed import ensure_demo_user
 
 structlog.configure(
@@ -22,6 +23,10 @@ log = structlog.get_logger()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings = get_settings()
+    # Create any missing tables. Idempotent. For schema *changes* in the future,
+    # generate Alembic revisions (see backend/alembic/) and apply them instead.
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     async with AsyncSessionLocal() as db:
         await ensure_demo_user(db)
     log.info("startup", model=settings.openai_model)
