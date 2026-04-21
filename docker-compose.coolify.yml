@@ -71,13 +71,12 @@ services:
       - traefik.http.services.frontend-${COOLIFY_RESOURCE_UUID}.loadbalancer.server.port=8080
       - "traefik.http.routers.frontend-http-${COOLIFY_RESOURCE_UUID}.rule=Host(`${DOMAIN}`)"
       - traefik.http.routers.frontend-http-${COOLIFY_RESOURCE_UUID}.entrypoints=http
-      - traefik.http.routers.frontend-http-${COOLIFY_RESOURCE_UUID}.middlewares=gzip,redir-to-https-${COOLIFY_RESOURCE_UUID}
+      - traefik.http.routers.frontend-http-${COOLIFY_RESOURCE_UUID}.middlewares=redir-to-https-${COOLIFY_RESOURCE_UUID}
       - traefik.http.middlewares.redir-to-https-${COOLIFY_RESOURCE_UUID}.redirectscheme.scheme=https
       - "traefik.http.routers.frontend-https-${COOLIFY_RESOURCE_UUID}.rule=Host(`${DOMAIN}`)"
       - traefik.http.routers.frontend-https-${COOLIFY_RESOURCE_UUID}.entrypoints=https
       - traefik.http.routers.frontend-https-${COOLIFY_RESOURCE_UUID}.tls=true
       - traefik.http.routers.frontend-https-${COOLIFY_RESOURCE_UUID}.tls.certresolver=letsencrypt
-      - traefik.http.routers.frontend-https-${COOLIFY_RESOURCE_UUID}.middlewares=gzip
 
 networks:
   coolify:
