@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { completeLesson, getLesson, submitExercise } from "@/api/lessons";
@@ -46,10 +46,6 @@ export function LessonPage() {
   });
 
   const exerciseCount = lesson?.exercises.length ?? 0;
-  const progress = useMemo(
-    () => (exerciseCount > 0 ? (idx / exerciseCount) * 100 : 0),
-    [idx, exerciseCount]
-  );
 
   if (isLoading || !lesson) return <p className="p-6">Loading lesson…</p>;
 
