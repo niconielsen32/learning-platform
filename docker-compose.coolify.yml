@@ -62,15 +62,12 @@ services:
       - backend
     expose:
       - "8080"
-    networks:
-      - default
-      - coolify
     # Explicit Traefik labels — Coolify escapes $ in compose label values, so
-    # env-var interpolation ($VAR / ${VAR}) can't be used here. Values are
-    # hard-coded to this deployment's domain.
+    # env-var interpolation can't be used here. Domain hard-coded for this
+    # deployment. Omit traefik.docker.network — Coolify attaches the proxy to
+    # the app's per-resource network automatically.
     labels:
       - traefik.enable=true
-      - traefik.docker.network=coolify
       - traefik.http.services.lp-frontend.loadbalancer.server.port=8080
       - "traefik.http.routers.lp-frontend-http.rule=Host(`agent2agent.company`)"
       - traefik.http.routers.lp-frontend-http.entrypoints=http
@@ -81,10 +78,6 @@ services:
       - traefik.http.routers.lp-frontend-https.entrypoints=https
       - traefik.http.routers.lp-frontend-https.tls=true
       - traefik.http.routers.lp-frontend-https.tls.certresolver=letsencrypt
-
-networks:
-  coolify:
-    external: true
 
 volumes:
   postgres_data:
