@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,12 +18,16 @@ const DIFFICULTIES = ["beginner", "intermediate", "advanced"] as const;
 
 export function CreateCoursePage() {
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState<(typeof DIFFICULTIES)[number]>("beginner");
 
   const m = useMutation({
     mutationFn: () => createCourse(topic, difficulty),
-    onSuccess: (c) => navigate(`/courses/${c.id}`),
+    onSuccess: (c) => {
+      qc.invalidateQueries({ queryKey: ["my-courses"] });
+      navigate(`/courses/${c.id}`);
+    },
   });
 
   return (

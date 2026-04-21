@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Lock, Star } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { getCourse } from "@/api/courses";
@@ -7,12 +8,22 @@ import type { Lesson, Unit } from "@/types/api";
 
 export function CoursePage() {
   const { courseId } = useParams<{ courseId: string }>();
+  const qc = useQueryClient();
   const { data: course, isLoading } = useQuery({
     queryKey: ["course", courseId],
     queryFn: () => getCourse(courseId!),
     enabled: !!courseId,
     refetchInterval: (q) => (q.state.data?.status === "generating" ? 3_000 : false),
   });
+
+  // When generation finishes, refresh the dashboard list so the card reflects READY.
+  const prevStatus = useRef(course?.status);
+  useEffect(() => {
+    if (prevStatus.current === "generating" && course?.status === "ready") {
+      qc.invalidateQueries({ queryKey: ["my-courses"] });
+    }
+    prevStatus.current = course?.status;
+  }, [course?.status, qc]);
 
   if (isLoading || !course) return <p className="p-6">Loading course…</p>;
 
